@@ -31,35 +31,80 @@ export default function LoginScreen({navigation}) {
     errPassword: '',
   });
 
-  const isFormValid = () => {
+  // make the code more modular
+  // ============================
 
-    // Reset error messages
-    setErrors({ errEmail: '', errPassword: ''});
-
-    // Check if email is valid
+  const isEmailValid = (email) => {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    if (!form.email || !emailRegex.test(form.email)) {
+    return emailRegex.test(email);
+  };
+
+  const isPasswordValid = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-_=+{};:,<.>])[A-Za-z\d!@#$%^&*()-_=+{};:,<.>]{8,}$/;
+    return password.length >= 8 && passwordRegex.test(password);
+  };
+
+  const handleEmailChange = (email) => {
+    setForm({ ...form, email });
+
+    if (!isEmailValid(email)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
         errEmail: 'Enter a valid email address.',
       }));
-      return false;
+    } else {
+      setErrors((prevErrors) => ({ ...prevErrors, errEmail: '' }));
     }
+  };
 
-    // Check if password is valid 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-_=+{};:,<.>])[A-Za-z\d!@#$%^&*()-_=+{};:,<.>]{8,}$/;
-    if (
-      !form.password ||
-      form.password.length < 8 ||
-      !passwordRegex.test(form.password)
-    ) {
+  const handlePasswordChange = (password) => {
+    setForm({ ...form, password });
+
+    if (!isPasswordValid(password)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
-        errPassword: 'Invalid password. Make sure it includes upper and lowercase letters, special characters, numbers, and is at least 8 characters long.',
+        errPassword:
+          'Invalid password. Make sure it includes upper and lowercase letters, special characters, numbers, and is at least 8 characters long.',
       }));
+    } else {
+      setErrors((prevErrors) => ({ ...prevErrors, errPassword: '' }));
     }
+  };
+
+  // ============================
+
+  const isFormValid = () => {
+
+    // // Reset error messages
+    // setErrors({ errEmail: '', errPassword: ''});
+
+    // // Check if email is valid
+    // const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    // if (!form.email || !emailRegex.test(form.email)) {
+    //   setErrors((prevErrors) => ({
+    //     ...prevErrors,
+    //     errEmail: 'Enter a valid email address.',
+    //   }));
+    //   return false;
+    // }
+
+    // // Check if password is valid 
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-_=+{};:,<.>])[A-Za-z\d!@#$%^&*()-_=+{};:,<.>]{8,}$/;
+    // if (
+    //   !form.password ||
+    //   form.password.length < 8 ||
+    //   !passwordRegex.test(form.password)
+    // ) {
+    //   setErrors((prevErrors) => ({
+    //     ...prevErrors,
+    //     errPassword: 'Invalid password. Make sure it includes upper and lowercase letters, special characters, numbers, and is at least 8 characters long.',
+    //   }));
+    // }
     
-    return Object.values(errors).every((error) => !error);
+    // return true;
+
+    // ==================
+    return !errors.errEmail && !errors.errPassword;
   };
 
   const handleSignIn = () => {
@@ -80,10 +125,11 @@ export default function LoginScreen({navigation}) {
   
         // Retrieve the store credentials
         const savedEmail = savedData.find(([key, value]) => key === 'email')?.[1];
+        const savedUsername = savedData.find(([key, value]) => key === 'username')?.[1];
         const savedPassword = savedData.find(([key, value]) => key === 'password')?.[1];
   
         // Check if the retrieved credentials are matching with the user input
-        if (savedEmail === form.email && savedPassword === form.password) {
+        if ((savedEmail === form.email || savedUsername === form.email) && savedPassword === form.password) {
           // Get additional user information from AsyncStorage
           const username = savedData.find(([key, value]) => key === 'username')?.[1];
           const fullname = savedData.find(([key, value]) => key === 'fullname')?.[1];
@@ -149,10 +195,7 @@ export default function LoginScreen({navigation}) {
                   placeholder="john@example.com"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
-                  onChangeText={(email) => {
-                    setForm({...form, email});
-                    setErrors({...errors, errEmail: ''});
-                  }}
+                  onChangeText={handleEmailChange}
                   value={form.email} />
                 <Text style={styles.errorMessage}>{errors.errEmail}</Text>
               </View>
@@ -163,10 +206,7 @@ export default function LoginScreen({navigation}) {
 
                 <TextInput
                   autoCorrect={false}
-                  onChangeText={(password) => {
-                    setForm({...form, password});
-                    setErrors({...errors, errPassword: ''});
-                  }}
+                  onChangeText={handlePasswordChange}
                   placeholder="Enter your password"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}

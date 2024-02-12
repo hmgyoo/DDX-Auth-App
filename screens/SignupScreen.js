@@ -31,45 +31,102 @@ export default function SignupScreen({navigation}) {
     errConfirmPassword: '',
   });
 
-  const isFormValid = () => {
+  // make the code more modular
+  // ============================
 
-    // Reset error messages
-    setErrors({ errEmail: '', errPassword: '', errConfirmPassword: '' });
-
-    // Check if email is valid
+  const isEmailValid = (email) => {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    if (!form.email || !emailRegex.test(form.email)) {
+    return emailRegex.test(email);
+  };
+
+  const isPasswordValid = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-_=+{};:,<.>])[A-Za-z\d!@#$%^&*()-_=+{};:,<.>]{8,}$/;
+    return password.length >= 8 && passwordRegex.test(password);
+  };
+
+  const handleEmailChange = (email) => {
+    setForm({ ...form, email });
+
+    if (!isEmailValid(email)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
         errEmail: 'Enter a valid email address.',
       }));
-      return false;
+    } else {
+      setErrors((prevErrors) => ({ ...prevErrors, errEmail: '' }));
     }
+  };
 
-    // Check if password is valid 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-_=+{};:,<.>])[A-Za-z\d!@#$%^&*()-_=+{};:,<.>]{8,}$/;
-    if (
-      !form.password ||
-      form.password.length < 8 ||
-      !passwordRegex.test(form.password)
-    ) {
+  const handlePasswordChange = (password) => {
+    setForm({ ...form, password });
+
+    if (!isPasswordValid(password)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
-        errPassword: 'Invalid password. Make sure it includes upper and lowercase letters, special characters, numbers, and is at least 8 characters long.',
+        errPassword:
+          'Invalid password. Make sure it includes upper and lowercase letters, special characters, numbers, and is at least 8 characters long.',
       }));
+    } else {
+      setErrors((prevErrors) => ({ ...prevErrors, errPassword: '' }));
     }
+  };
 
-    // Check if password and confirm password is matching
-    if (form.password !== form.confirmPassword) {
+  const handleConfirmPasswordChange = (confirmPassword) => {
+    setForm({ ...form, confirmPassword });
+
+    if (form.password !== confirmPassword) {
       setErrors((prevErrors) => ({
         ...prevErrors,
         errConfirmPassword: 'Passwords do not match.',
       }));
-      return false;
+    } else {
+      setErrors((prevErrors) => ({ ...prevErrors, errConfirmPassword: '' }));
     }
+  };
 
-    // return true if all is correct
-    return true;
+  // ============================
+
+  const isFormValid = () => {
+
+    // // Reset error messages
+    // setErrors({ errEmail: '', errPassword: '', errConfirmPassword: '' });
+
+    // // Check if email is valid
+    // const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    // if (!form.email || !emailRegex.test(form.email)) {
+    //   setErrors((prevErrors) => ({
+    //     ...prevErrors,
+    //     errEmail: 'Enter a valid email address.',
+    //   }));
+    //   return false;
+    // }
+
+    // // Check if password is valid 
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-_=+{};:,<.>])[A-Za-z\d!@#$%^&*()-_=+{};:,<.>]{8,}$/;
+    // if (
+    //   !form.password ||
+    //   form.password.length < 8 ||
+    //   !passwordRegex.test(form.password)
+    // ) {
+    //   setErrors((prevErrors) => ({
+    //     ...prevErrors,
+    //     errPassword: 'Invalid password. Make sure it includes upper and lowercase letters, special characters, numbers, and is at least 8 characters long.',
+    //   }));
+    // }
+
+    // // Check if password and confirm password is matching
+    // if (form.password !== form.confirmPassword) {
+    //   setErrors((prevErrors) => ({
+    //     ...prevErrors,
+    //     errConfirmPassword: 'Passwords do not match.',
+    //   }));
+    //   return false;
+    // }
+
+    // // return true if all is correct
+    // return true;
+
+    return !errors.errEmail && !errors.errPassword && !errors.errConfirmPassword;
   } 
 
   const handleNextPress = async () => {
@@ -144,7 +201,7 @@ export default function SignupScreen({navigation}) {
                   autoCapitalize="none"
                   autoCorrect={false}
                   keyboardType="email-address"
-                  onChangeText={email => setForm({ ...form, email })}
+                  onChangeText={handleEmailChange}
                   placeholder="ex. john@example.com"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
@@ -159,7 +216,7 @@ export default function SignupScreen({navigation}) {
 
                 <TextInput
                   autoCorrect={false}
-                  onChangeText={password => setForm({ ...form, password })}
+                  onChangeText={handlePasswordChange}
                   placeholder="Enter your password"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
@@ -175,7 +232,7 @@ export default function SignupScreen({navigation}) {
 
                 <TextInput
                   autoCorrect={false}
-                  onChangeText={confirmPassword => setForm({ ...form, confirmPassword })}
+                  onChangeText={handleConfirmPasswordChange}
                   placeholder="Make sure that the passwords match"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}

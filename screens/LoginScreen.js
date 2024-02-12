@@ -36,7 +36,9 @@ export default function LoginScreen({navigation}) {
 
   const isEmailValid = (email) => {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    return emailRegex.test(email);
+    const usernameRegex = /^[a-zA-Z0-9_-]{3,16}$/;
+
+  return emailRegex.test(email) || usernameRegex.test(email);
   };
 
   const isPasswordValid = (password) => {
@@ -50,7 +52,7 @@ export default function LoginScreen({navigation}) {
     if (!isEmailValid(email)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
-        errEmail: 'Enter a valid email address.',
+        errEmail: 'Enter a valid email address or username',
       }));
     } else {
       setErrors((prevErrors) => ({ ...prevErrors, errEmail: '' }));
@@ -186,13 +188,13 @@ export default function LoginScreen({navigation}) {
             {/* Email address */}
             <View style={styles.form}>
               <View style={styles.input}>
-                <Text style={styles.inputLabel}>Email address</Text>
+                <Text style={styles.inputLabel}>Email address or username</Text>
 
                 <TextInput
                   autoCapitalize="none"
                   autoCorrect={false}
-                  keyboardType="email-address"
-                  placeholder="john@example.com"
+                  // keyboardType="email-address"
+                  placeholder="john@example.com or johndoe"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
                   onChangeText={handleEmailChange}

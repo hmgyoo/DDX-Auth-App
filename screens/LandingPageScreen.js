@@ -17,9 +17,9 @@ export default function LandingPageScreen() {
           source={{ uri: user.uploadImage }}
           />
       )}
-      <Text style={{ marginTop: 20}}>Welcome, {user.fullname}!</Text>
-      <Text>Email: {user.email}</Text>
-      <Text>Username: {user.username}</Text>
+      <Text style={styles.welcomeText}>Welcome, {user.fullname}!</Text>
+      <Text style={styles.userInfo}>Email: {user.email}</Text>
+      <Text style={styles.userInfo}>Username: {user.username}</Text>
       
     </View>
   );
@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
+    marginTop: 20,
   },
   userInfo: {
     fontSize: 18,

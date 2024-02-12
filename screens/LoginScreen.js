@@ -57,7 +57,8 @@ export default function LoginScreen({navigation}) {
     }
 
     // return true if all is correct
-    return true;
+    // return true;
+    return Object.values(errors).every((error) => !error);
   };
 
   const handleSignIn = () => {
@@ -67,18 +68,27 @@ export default function LoginScreen({navigation}) {
   const handleLogin = async () => {
     if (isFormValid()) {
       try {
+        // Retrieve all keys from AsyncStorage
+        const keys = await AsyncStorage.getAllKeys();
+  
+        // Retrieve all data corresponding to the keys
+        const savedData = await AsyncStorage.multiGet(keys);
+  
+        // Log the retrieved data
+        console.log('Saved Data:', savedData);
+  
+        // You can now perform any additional logic with the retrieved data
+  
         // Retrieve the stored credentials
-        const savedEmail = await AsyncStorage.getItem('email');
-        const savedPassword = await AsyncStorage.getItem('password');
-
+        const savedEmail = savedData.find(([key, value]) => key === 'email')?.[1];
+        const savedPassword = savedData.find(([key, value]) => key === 'password')?.[1];
+  
         // Check if the retrieved credentials are matching with the user input
-        if (
-          savedEmail === form.email && savedPassword === form.password
-        ) {
+        if (savedEmail === form.email && savedPassword === form.password) {
           // Navigate to landing page
           navigation.navigate('Landing Page');
         } else {
-          Alert.alert('Login Failed', 'Invaid email or password');
+          Alert.alert('Login Failed', 'Invalid email or password');
         }
       } catch (error) {
         console.log('Error retrieving user credentials.', error);
@@ -125,21 +135,27 @@ export default function LoginScreen({navigation}) {
                   autoCapitalize="none"
                   autoCorrect={false}
                   keyboardType="email-address"
-                  onChangeText={email => setForm({ ...form, email })}
                   placeholder="john@example.com"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
+                  onChangeText={(email) => {
+                    setForm({...form, email});
+                    setErrors({...errors, errEmail: ''});
+                  }}
                   value={form.email} />
                 <Text style={styles.errorMessage}>{errors.errEmail}</Text>
               </View>
               
-
+              {/* Password */}
               <View style={styles.input}>
                 <Text style={styles.inputLabel}>Password</Text>
 
                 <TextInput
                   autoCorrect={false}
-                  onChangeText={password => setForm({ ...form, password })}
+                  onChangeText={(password) => {
+                    setForm({...form, password});
+                    setErrors({...errors, errPassword: ''});
+                  }}
                   placeholder="Enter your password"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
@@ -148,6 +164,7 @@ export default function LoginScreen({navigation}) {
                 <Text style={styles.errorMessage}>{errors.errPassword}</Text>
               </View>
 
+              {/* Sign in Button */}
               <View style={styles.formAction}>
                 <TouchableOpacity
                   onPress={handleLogin}>
@@ -157,6 +174,7 @@ export default function LoginScreen({navigation}) {
                 </TouchableOpacity>
               </View>
 
+              {/* Navigatet to Sign Up Screen */}
               <TouchableOpacity
               // change screen
                 onPress={handleSignIn}

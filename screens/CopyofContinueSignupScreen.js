@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -9,80 +9,97 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ImagePicker from 'react-native-image-crop-picker';
 
-export default function SignupScreen({navigation}) {
+export default function CopyofContinueSignupScreen({navigation}) {
 
-  // for text input
+  // for inputfields
   const [form, setForm] = useState({
     username: '',
-    fullname: '',
-    uploadImage: '',
+    fullName: '',
+    uploadPicture: '',
   });
 
   // for error messages
   const [errors, setErrors] = useState({
     errUsername: '',
-    errFullname: '',
-    errUploadImage: '',
+    errFullName: '',
+    errUploadPicture: '',
   });
 
   const isFormValid = () => {
 
-    // Reset error messages
-    setErrors({ errUsername: '', errFullname: '', errUploadImage: '' });
-
-    // Check if email is valid
+    // Check if username is valid
     const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
     if (!form.username || !usernameRegex.test(form.username)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
-        errUsername: 'Enter a valid username.',
+        errUsername: 'Please enter a valid username.',
       }));
       return false;
     }
 
-    // Check if password is valid 
-    const fullnameRegex = /^[a-zA-Z\s'-]+$/;
-    if (!form.fullname || !fullnameRegex.test(form.fullname)) {
+    // Check if full name is valid
+    const fullNameRegex = /^[a-zA-Z\s'-]+$/;
+    if (!form.fullName || !fullNameRegex.test(form.fullName)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
-        errFullname: 'Enter a valud full name.',
+        errFullName: 'Please enter a valid full name.',
       }));
+      return false;
     }
 
-    // Check if image is uploaded
+    // Check if the picture is uploaded
+    if (!form.uploadPicture) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        errUploadPicture: 'Please upload a picture.',
+      }));
+      return false;
+    }
 
     // return true if all is correct
     return true;
-  } 
+  }
 
   const handleImagePicker = async () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 0.5,
+    };
+
     try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: true,
-      });
-      setForm({ ...form, uploadImage: image.path });
-      console.log(JSON.stringify(image.path))
+      const result = await launchImageLibrary(options);
+
+      if (result && !result.didCancel) {
+        setForm({ ...form, uploadPicture: result.uri });
+      }
     } catch (error) {
       console.error('Error picking an image:', error);
     }
-  }
+  };
 
   const handleNextPress = async () => {
     if (isFormValid()) {
       try {
-        await AsyncStorage.setItem('username', form.username);
-        await AsyncStorage.setItem('fullname', form.fullname);
-        await AsyncStorage.setItem('uploadImage', form.uploadImage);
+
+        // stringfy to use save the image properly
+        const formString = JSON.stringify(form);
+        // Save user data to AsyncStorage
+        // await AsyncStorage.setItem('username', form.username);
+        // await AsyncStorage.setItem('fullName', form.fullName);
+        // await AsyncStorage.setItem('uploadPicture', form.uploadPicture);
+        await AsyncStorage.setItem('formData', formString);
+        console.log(JSON.stringify(formString));
       } catch (error) {
-        console.error('Error saving data to AsyncStorage:', error);
+        Alert.alert('Error saving data to AsyncStorage', error.message);
       }
+  
+      // Proceed to the next step or perform any necessary action
       navigation.navigate('Success Page');
     } 
   };
@@ -94,16 +111,13 @@ export default function SignupScreen({navigation}) {
   useFocusEffect(
     React.useCallback(() => {
       //Reset the forms when being focused in screen
-      setForm({ username: '', fullname: '', uploadImage: '',});
-      setErrors({ errUsername: '', 
-                  errFullname: '', 
-                  errUploadImage: '',});
+      setForm({ username: '', fullName: '', uploadPicture: ''})
     }, [])
   );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#dbe4f1' }}>
-
+    
       {/* Keyboard behavior */}
       <KeyboardAvoidingView behavior='height' style={{flex: 1}}>
 
@@ -130,19 +144,19 @@ export default function SignupScreen({navigation}) {
 
             <View style={styles.form}>
 
-              {/* User name */}
+              {/* Username */}
               <View style={styles.input}>
                 <Text style={styles.inputLabel}>Username</Text>
 
                 <TextInput
                   autoCapitalize="none"
                   autoCorrect={false}
+                  // keyboardType="email-address"
                   onChangeText={username => setForm({ ...form, username })}
-                  placeholder="ex. testuser"
+                  placeholder="ex. johndoe"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
-                  value={form.username} 
-                />
+                  value={form.username} />
                 <Text style={styles.errorMessage}>{errors.errUsername}</Text>
               </View>
 
@@ -152,13 +166,12 @@ export default function SignupScreen({navigation}) {
 
                 <TextInput
                   autoCorrect={false}
-                  onChangeText={fullname => setForm({ ...form, fullname })}
-                  placeholder="ex. Test User"
+                  onChangeText={fullName => setForm({ ...form, fullName })}
+                  placeholder="ex. John Doe"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
-                  value={form.fullname} 
-                />
-                <Text style={styles.errorMessage}>{errors.errFullname}</Text>
+                  value={form.fullName} />
+                <Text style={styles.errorMessage}>{errors.errFullName}</Text>
               </View>
 
               {/* Upload picture */}
@@ -168,18 +181,21 @@ export default function SignupScreen({navigation}) {
                 </View>
               </TouchableOpacity>
 
-              {/* Preview selected picture */}
-              <View style={styles.imageContainer}>
-                {form.uploadImage ? (
-                  <Image source={{ uri: form.uploadImage }} style={styles.selectedImage} />
-                ) : null}
-              </View>
+              {/* Display selected image */}
+              {form.uploadPicture ? (
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: form.uploadPicture }}
+                    style={styles.selectedImage}
+                  />
+                </View>
+              ) : null}
 
+              {/* Continue button */}
               <View style={styles.formAction}>
-                <TouchableOpacity
-                  onPress={handleNextPress}>
+                <TouchableOpacity onPress={handleNextPress}>
                   <View style={styles.btn}>
-                    <Text style={styles.btnText}>Create Account</Text>
+                    <Text style={styles.btnText}>Create account</Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -272,6 +288,18 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#222',
   },
+
+  // Image upload style
+  // Display selected image styles
+  imageContainer: {
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  selectedImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+  },
   /** Button */
   btn: {
     flexDirection: 'row',
@@ -292,7 +320,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  // Upload img btn styles
+  // Upload picture 
   uploadBtn: {
     backgroundColor: '#ccc', // Gray background color
     borderRadius: 12,
@@ -304,15 +332,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#222',
-  },
-  // Preview image style
-  imageContainer: {
-    alignItems: 'center',
-    marginVertical: 16,
-  },
-  selectedImage: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
   },
 });

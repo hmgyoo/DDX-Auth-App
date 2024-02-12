@@ -5,6 +5,7 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import ContinueSignupScreen from './screens/ContinueSignupScreen';
 import LandingPageScreen from './screens/LandingPage';
+import SuccessSignupScreen from './screens/SuccessSignupScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,7 +17,7 @@ const App = () => {
         <Stack.Screen name="Sign Up" component={SignupScreen}/>
         <Stack.Screen name="Continue Sign Up" component={ContinueSignupScreen}/>
         <Stack.Screen name="Landing Page" component={LandingPageScreen}/>
-        <Stack.Screen name="Success Page" component={LandingPageScreen}/>
+        <Stack.Screen name="Success Page" component={SuccessSignupScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

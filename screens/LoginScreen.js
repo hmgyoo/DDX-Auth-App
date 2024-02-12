@@ -13,8 +13,11 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute } from '@react-navigation/native';
 
 export default function LoginScreen({navigation}) {
+
+  const route = useRoute();
 
   // For email and password text field
   const [form, setForm] = useState({
@@ -55,9 +58,7 @@ export default function LoginScreen({navigation}) {
         errPassword: 'Invalid password. Make sure it includes upper and lowercase letters, special characters, numbers, and is at least 8 characters long.',
       }));
     }
-
-    // return true if all is correct
-    // return true;
+    
     return Object.values(errors).every((error) => !error);
   };
 
@@ -77,16 +78,26 @@ export default function LoginScreen({navigation}) {
         // Log the retrieved data
         console.log('Saved Data:', savedData);
   
-        // You can now perform any additional logic with the retrieved data
-  
-        // Retrieve the stored credentials
+        // Retrieve the store credentials
         const savedEmail = savedData.find(([key, value]) => key === 'email')?.[1];
         const savedPassword = savedData.find(([key, value]) => key === 'password')?.[1];
   
         // Check if the retrieved credentials are matching with the user input
         if (savedEmail === form.email && savedPassword === form.password) {
-          // Navigate to landing page
-          navigation.navigate('Landing Page');
+          // Get additional user information from AsyncStorage
+          const username = savedData.find(([key, value]) => key === 'username')?.[1];
+          const fullname = savedData.find(([key, value]) => key === 'fullname')?.[1];
+          const uploadImage = savedData.find(([key, value]) => key === 'uploadImage')?.[1];
+
+          // Navigate to landing page and pass user data as params
+          navigation.navigate('Landing Page', {
+            user: {
+              email: savedEmail,
+              username,
+              fullname,
+              uploadImage,
+            },
+          });
         } else {
           Alert.alert('Login Failed', 'Invalid email or password');
         }

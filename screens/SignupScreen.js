@@ -20,6 +20,8 @@ export default function SignupScreen({navigation}) {
     email: '',
     password: '',
     confirmPassword: '',
+    // save to user object
+    user: {},
   });
 
   // for error messages
@@ -76,10 +78,18 @@ export default function SignupScreen({navigation}) {
       try {
         await AsyncStorage.setItem('email', form.email);
         await AsyncStorage.setItem('password', form.password);
+        // Add user data to user object
+        setForm((prevForm) => ({
+          ...prevForm,
+          user: {
+            email: form.email,
+            password: form.password,
+          },
+        }));
       } catch (error) {
         console.error('Error saving data to Async Storage:', error);
       }
-      navigation.navigate('Continue Sign Up');
+      navigation.navigate('Continue Sign Up', { user: form.user});
     } 
   };
 

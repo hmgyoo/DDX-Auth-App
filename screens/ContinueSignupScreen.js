@@ -13,14 +13,19 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
+import { useRoute } from '@react-navigation/native';
 
 export default function SignupScreen({navigation}) {
+
+  const route = useRoute();
 
   // for text input
   const [form, setForm] = useState({
     username: '',
     fullname: '',
     uploadImage: '',
+    // extract user data from the route
+    user: route.params?.user || {},
   });
 
   // for error messages
@@ -80,10 +85,20 @@ export default function SignupScreen({navigation}) {
         await AsyncStorage.setItem('username', form.username);
         await AsyncStorage.setItem('fullname', form.fullname);
         await AsyncStorage.setItem('uploadImage', form.uploadImage);
+        // add user data to the user object
+        setForm((prevForm) => ({
+          ...prevForm,
+          user: {
+            ...prevForm.user,
+            username: form.username,
+            fullname: form.fullname,
+            uploadImage: form.uploadImage,
+          }
+        }));
       } catch (error) {
         console.error('Error saving data to AsyncStorage:', error);
       }
-      navigation.navigate('Success Page');
+      navigation.navigate('Success Page', { user: form.user });
     } 
   };
 
